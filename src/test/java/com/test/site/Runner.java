@@ -16,7 +16,8 @@ public class Runner {
     @Test
     public static void testApp() throws Exception {
         List<String> tests = new ArrayList<>();
-        tests.add("SliderTest");
+        tests.add("DemoTest");
+        /*
         try {
             Path apps = FileSystems.getDefault().getPath("apps").toAbsolutePath();
             ZipFile zipFile = new ZipFile(apps.toFile() + "/WebDriverAgent-Test.zip");
@@ -24,6 +25,7 @@ public class Runner {
         } catch (ZipException e) {
             e.printStackTrace();
         }
+         */
         ATDRunner atdRunner = new ATDRunner();
         boolean hasFailures = atdRunner.runner("com.test.site", tests);
         Assert.assertFalse(hasFailures, "Testcases have failed in parallel execution");

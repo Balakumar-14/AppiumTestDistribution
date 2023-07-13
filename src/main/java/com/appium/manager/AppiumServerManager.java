@@ -98,7 +98,7 @@ public class AppiumServerManager {
             Path path = FileSystems.getDefault().getPath(Capabilities.getInstance()
                     .getCapabilities().get("appiumServerPath").toString());
             String serverPath = path.normalize().toAbsolutePath().toString();
-            LOGGER.info("Picking UserSpecified Path for AppiumServiceBuilder");
+            LOGGER.info("Picking UserSpecified Path for AppiumServiceBuilder - " + serverPath);
             return getAppiumServiceBuilderWithUserAppiumPath(serverPath);
         } else {
             LOGGER.info("Picking Default Path for AppiumServiceBuilder");
