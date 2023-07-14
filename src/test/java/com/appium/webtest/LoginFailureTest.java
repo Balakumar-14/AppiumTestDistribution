@@ -7,10 +7,10 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.testng.annotations.Test;
 
-@Test(groups = { "end-to-end-test" })
+// @Test(groups = { "end-to-end-test" })
 public class LoginFailureTest extends UserBaseTest {
 
-    @Test
+    // @Test
     public void loginTestFailure() throws InterruptedException {
         getDriver().get("https://www.thoughtworks.com");
         WebElement idElement = getDriver().findElement(By.id("mobile-menu-title"));

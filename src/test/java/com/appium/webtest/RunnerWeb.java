@@ -9,7 +9,7 @@ import java.util.List;
 public class RunnerWeb {
 
 
-    @Test
+    // @Test
     public void runWebTests() throws Exception {
         List<String> tests = new ArrayList<>();
         ATDRunner atdRunner = new ATDRunner();

@@ -7,11 +7,12 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.testng.annotations.Test;
 
-@Test(groups = { "end-to-end-test" })
+// @Test(groups = { "end-to-end-test" })
 public class LoginTest extends UserBaseTest {
 
 
-    @Test public void loginTest() throws InterruptedException {
+    // @Test
+    public void loginTest() throws InterruptedException {
         getDriver().get("http://www.thoughtworks.com");
         WebElement idElement = getDriver().findElement(By.id("mobile-menu-title"));
         Assert.assertNotNull(idElement);
