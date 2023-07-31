@@ -6,6 +6,7 @@ import com.appium.utils.Helpers;
 import com.context.SessionContext;
 import com.context.TestExecutionContext;
 
+import org.apache.log4j.Logger;
 import org.testng.IClassListener;
 import org.testng.IInvokedMethod;
 import org.testng.IInvokedMethodListener;
@@ -27,6 +28,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public final class AppiumParallelTestListener extends Helpers
         implements IClassListener, IInvokedMethodListener, ISuiteListener, ITestListener {
 
+    private static final Logger LOGGER = Logger.getLogger(
+            AppiumParallelMethodTestListener.class.getName());
     private TestLogger testLogger;
     private AppiumServerManager appiumServerManager;
     private AppiumDriverManager appiumDriverManager;
@@ -49,6 +52,12 @@ public final class AppiumParallelTestListener extends Helpers
      */
     @Override
     public void beforeInvocation(IInvokedMethod iInvokedMethod, ITestResult testResult) {
+        if (AppiumDeviceManager.getAppiumDevice() != null) {
+            LOGGER.info("Driver Session created!");
+        }
+        else {
+            LOGGER.info("Driver Session not created!");
+        }
         currentMethods.set(iInvokedMethod.getTestMethod());
         SkipIf annotation = iInvokedMethod.getTestMethod().getConstructorOrMethod().getMethod()
                 .getAnnotation(SkipIf.class);

@@ -15,8 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.appium.filelocations.FileLocations.SERVER_CONFIG;
-import static com.appium.utils.ConfigFileManager.FRAMEWORK;
-import static com.appium.utils.ConfigFileManager.RUNNER;
+import static com.appium.utils.ConfigFileManager.*;
 import static com.appium.utils.FigletHelper.figlet;
 import static com.appium.utils.OverriddenVariable.getOverriddenStringValue;
 import static java.lang.System.getProperty;
@@ -36,7 +35,7 @@ public class ATDRunner {
         capabilities = Capabilities.getInstance();
         writeServiceConfig();
         AppiumServerManager appiumServerManager = new AppiumServerManager();
-        appiumServerManager.startAppiumServer("127.0.0.1"); //Needs to be removed
+        appiumServerManager.startAppiumServer("127.0.0.1"); //Needs to be removed"127.0.0.1"
         List<Device> devices = Devices.getConnectedDevices();
         ATDExecutor = new ATDExecutor(devices);
         createOutputDirectoryIfNotExist();
@@ -63,6 +62,7 @@ public class ATDRunner {
 
     public boolean runner(String pack, List<String> tests) throws Exception {
         figlet(RUNNER.get());
+        figlet(RUNNER_LEVEL.get());
         return parallelExecution(pack, tests);
     }
 
@@ -84,13 +84,13 @@ public class ATDRunner {
         createAppiumLogsFolder();
         createSnapshotDirectoryFor();
         String platform = getOverriddenStringValue("Platform");
-        if (platform.equalsIgnoreCase("android")) {
+        // if (platform.equalsIgnoreCase("android")) {
             if (!capabilities.getCapabilityObjectFromKey("android").has("automationName")) {
                 throw new IllegalArgumentException("Please set automationName "
                         + "as UIAutomator2 or Espresso to create Android driver");
             }
             generateDirectoryForAdbLogs();
-        }
+        // }
 
         boolean result = false;
         String runner = RUNNER.get();
@@ -129,6 +129,7 @@ public class ATDRunner {
 
     private void createSnapshotDirectoryFor() {
         List<Device> udids = Devices.getConnectedDevices();
+        System.out.println(udids);
         for (Device udid : udids) {
             String os = udid.getPlatform().equalsIgnoreCase(IOS) ? "iOS" : "Android";
             createPlatformDirectory(os);

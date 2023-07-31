@@ -50,7 +50,7 @@ public class CucumberScenarioListener implements ConcurrentEventListener {
     private AppiumDriver allocateDeviceAndStartDriver(String scenarioName) {
         AppiumDriver driver = AppiumDriverManager.getDriver();
         if (driver == null || driver.getSessionId() == null) {
-            return appiumDriverManager.startAppiumDriverInstance(scenarioName);
+            return appiumDriverManager.startAppiumDriverInstanceWithDeviceName(scenarioName, "Haha");
         } else {
             return driver;
         }
@@ -212,7 +212,7 @@ public class CucumberScenarioListener implements ConcurrentEventListener {
 
     private void stopAppiumDriver() {
         try {
-            appiumDriverManager.stopAppiumDriver();
+            appiumDriverManager.stopAppiumDriver("Haha");
         } catch (Exception e) {
             LOGGER.warn("Error stopping Appium Driver", e);
         }

@@ -16,7 +16,13 @@ public class Runner {
     @Test
     public static void testApp() throws Exception {
         List<String> tests = new ArrayList<>();
-        tests.add("DemoTest");
+        tests.add("DemoOneTest");
+        tests.add("DemoTwoTest");
+//        tests.add("DemoFourTest");
+//        tests.add("DemoThreeTest");
+//        tests.add("DemoFiveTest");
+//        tests.add("DemoSixTest");
+
         /*
         try {
             Path apps = FileSystems.getDefault().getPath("apps").toAbsolutePath();

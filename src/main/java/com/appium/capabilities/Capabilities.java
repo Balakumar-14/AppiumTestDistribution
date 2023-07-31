@@ -269,13 +269,15 @@ public class Capabilities {
 
     public void validateCapabilitySchema(JSONObject loadedCapabilities) {
         try {
-            isPlatformInEnv();
+            System.out.println("Validating capabilities schema: " + loadedCapabilities);
             LOGGER.debug("Validating capabilities schema: " + loadedCapabilities);
+
+            // isPlatformInEnv();
             InputStream inputStream = getClass().getResourceAsStream(getPlatform());
             JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));
             Schema schema = SchemaLoader.load(rawSchema);
             schema.validate(loadedCapabilities);
-            //validateRemoteHosts(loadedCapabilities);
+            // validateRemoteHosts(loadedCapabilities);
         } catch (ValidationException e) {
             if (e.getCausingExceptions().size() > 1) {
                 e.getCausingExceptions().stream()
@@ -290,7 +292,8 @@ public class Capabilities {
     }
 
     private String getPlatform() {
-        String platform = atdEnvironment.get("Platform");
+        // String platform = atdEnvironment.get("Platform");
+        String platform = "android";
         String schema = null;
         switch (platform.toLowerCase()) {
             case "android":

@@ -17,7 +17,7 @@ public class Devices {
     }
 
     @SneakyThrows
-    public static List<Device> getConnectedDevices() {
+    public static List<Device> getConnectedDevices(){
         if (instance == null) {
             System.out.println(Thread.currentThread().getId());
             AppiumServerManager appiumServerManager = new AppiumServerManager();

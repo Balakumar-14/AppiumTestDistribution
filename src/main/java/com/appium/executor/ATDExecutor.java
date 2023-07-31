@@ -1,6 +1,7 @@
 package com.appium.executor;
 
 import static com.appium.filelocations.FileLocations.PARALLEL_XML_LOCATION;
+import static com.appium.filelocations.FileLocations.SAMPLE_XML_LOCATION;
 import static com.appium.utils.ConfigFileManager.CATEGORY;
 import static com.appium.utils.ConfigFileManager.EXCLUDE_GROUPS;
 import static com.appium.utils.ConfigFileManager.INCLUDE_GROUPS;
@@ -13,6 +14,7 @@ import static java.util.Collections.addAll;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 import com.appium.device.Device;
+import com.appium.device.Devices;
 import com.appium.utils.ConfigFileManager;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
@@ -90,7 +92,12 @@ public class ATDExecutor {
         suite.setName(suiteName);
         suite.setThreadCount(deviceCount);
         suite.setDataProviderThreadCount(deviceCount);
-        suite.setParallel(ParallelMode.TESTS);
+        if (RUNNER_LEVEL.get().equalsIgnoreCase("CLASS")) {
+            suite.setParallel(ParallelMode.CLASSES);
+        }
+        else if (RUNNER_LEVEL.get().equalsIgnoreCase("METHODS")){
+            suite.setParallel(ParallelMode.METHODS);
+        }
         suite.setVerbose(2);
         suite.setListeners(listeners);
         for (int i = 0; i < deviceCount; i++) {
@@ -112,25 +119,63 @@ public class ATDExecutor {
     public XmlSuite constructXmlSuiteForClassLevelDistributionRunner(List<String> tests,
                    Map<String, List<Method>> methods,
                    String suiteName, String categoryName, int deviceCount) {
+        int devicesCount = Devices.getConnectedDevices().size();
         XmlSuite suite = new XmlSuite();
         suite.setName(suiteName);
         suite.setThreadCount(deviceCount);
-        suite.setParallel(ParallelMode.CLASSES);
+        suite.setParallel(ParallelMode.TESTS);
         suite.setVerbose(2);
         listeners.add("com.appium.manager.AppiumParallelMethodTestListener");
         include(listeners, LISTENERS);
         suite.setListeners(listeners);
-        XmlTest test = new XmlTest(suite);
-        test.setName(categoryName);
-        test.addParameter("device", "");
-        include(groupsExclude, EXCLUDE_GROUPS);
-        include(groupsInclude, INCLUDE_GROUPS);
-        test.setIncludedGroups(groupsInclude);
-        test.setExcludedGroups(groupsExclude);
-        List<XmlClass> xmlClasses = writeXmlClass(tests, methods);
-        test.setXmlClasses(xmlClasses);
+
+//        XmlTest test = new XmlTest(suite);
+//        test.setName(categoryName);
+//        test.addParameter("device", "");
+//        include(groupsExclude, EXCLUDE_GROUPS);
+//        include(groupsInclude, INCLUDE_GROUPS);
+//        test.setIncludedGroups(groupsInclude);
+//        test.setExcludedGroups(groupsExclude);
+//        List<XmlClass> xmlClasses = writeXmlClass(tests, methods);
+//        test.setXmlClasses(xmlClasses);
+
+        int deviceIterator = 0;
+
+        for(String testCase : tests)
+        {
+            xmlTestsCreator(suite, testCase, methods, deviceList.get(deviceIterator).getUdid());
+            if(deviceIterator == (devicesCount-1))
+            {
+                deviceIterator = 0;
+            }
+            else {
+                deviceIterator++;
+            }
+        }
+
+//        XmlClass xmlClass = writeSingleXMLClass(tests.get(1), methods);
         writeTestNGFile(suite);
         return suite;
+    }
+
+    public XmlTest xmlTestsCreator(XmlSuite suite,String testCase,
+                                  Map<String, List<Method>> methods , String deviceName){
+
+        XmlTest test = new XmlTest(suite);
+        for(String className : methods.keySet()) {
+            List<XmlClass> xmlClasses = new ArrayList<>();
+            if (className.contains("Test") && className.contains(testCase)) {
+                XmlClass xmlClass = new XmlClass();
+                xmlClass.setName(className);
+                xmlClasses.add(xmlClass);
+                test.setName(className);
+                test.addParameter("device", deviceName);
+                test.setThreadCount(1);
+                test.setXmlClasses(xmlClasses);
+                test.setParallel(ParallelMode.NONE);
+            }
+        }
+        return test;
     }
 
 
@@ -218,6 +263,15 @@ public class ATDExecutor {
         return xmlClasses;
     }
 
+    private XmlClass writeSingleXMLClass(String testCase, Map<String, List<Method>> methods){
+        for (String className : methods.keySet()) {
+            XmlClass xmlClass = new XmlClass();
+            xmlClass.setName(className);
+
+        }
+        return null; // If the test case doesn't match any class, return null or handle accordingly.
+
+    }
     private void writeTestNGFile(XmlSuite suite) {
         try (FileWriter writer = new FileWriter(new File(
             getProperty("user.dir") + PARALLEL_XML_LOCATION))) {

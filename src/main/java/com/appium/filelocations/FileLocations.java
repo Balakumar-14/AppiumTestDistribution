@@ -3,6 +3,7 @@ package com.appium.filelocations;
 import java.io.File;
 
 import static com.appium.utils.OverriddenVariable.getOverriddenStringValue;
+import static java.lang.System.getProperty;
 
 public interface FileLocations {
     String OUTPUT_DIRECTORY =
@@ -13,6 +14,7 @@ public interface FileLocations {
 
     String PARALLEL_XML_LOCATION = OUTPUT_DIRECTORY + "parallel.xml";
 
+    String SAMPLE_XML_LOCATION = "/checkstyle/testSample.xml";
     String SERVER_CONFIG = OUTPUT_DIRECTORY + "server.json";
     String REPORTS_DIRECTORY = OUTPUT_DIRECTORY + "reports" + File.separator;
 

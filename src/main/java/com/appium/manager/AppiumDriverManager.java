@@ -15,7 +15,6 @@ import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 
 import static com.appium.manager.AppiumDeviceManager.getMobilePlatform;
@@ -37,13 +36,19 @@ public class AppiumDriverManager {
         appiumDriver.set(driver);
     }
 
-    private AppiumDriver initialiseDriver(DesiredCapabilities desiredCapabilities) {
-        LOGGER.info("Initialise Driver with Capabilities: ");
+    private AppiumDriver initialiseDriver(DesiredCapabilities desiredCapabilities, String testMethodName) {
+        LOGGER.info(testMethodName + "Initialise Driver with Capabilities: ");
         desiredCapabilities.getCapabilityNames().forEach(key -> LOGGER.info("\t" + key
                 + ":: " + desiredCapabilities.getCapability(key)));
         AppiumServerManager appiumServerManager = new AppiumServerManager();
         String remoteWDHubIP = appiumServerManager.getRemoteWDHubIP();
-        return createAppiumDriver(desiredCapabilities, remoteWDHubIP);
+
+        if(testMethodName.equalsIgnoreCase("demoTwoTestFour") || testMethodName.equalsIgnoreCase("demoTwoTestThree")) {
+            return createAppiumDriver(desiredCapabilities, remoteWDHubIP);
+        }
+        else {
+            return createAppiumDriver(desiredCapabilities, remoteWDHubIP);
+        }
     }
 
     @SneakyThrows
@@ -71,7 +76,8 @@ public class AppiumDriverManager {
         LOGGER.info("Session Created for "
                 + AppiumDeviceManager.getMobilePlatform().name()
                 + "\n\tSession Id: " + currentDriverSession.getSessionId()
-                + "\n\tUDID: " + currentDriverSessionCapabilities.getCapability("udid"));
+                + "\n\tUDID: " + currentDriverSessionCapabilities.getCapability("udid")
+                + "Method : " + currentDriverSession.getExecuteMethod());
         String json = new Gson().toJson(currentDriverSessionCapabilities.asMap());
         DriverSession driverSessions = (new ObjectMapper().readValue(json, DriverSession.class));
         AppiumDeviceManager.setDevice(driverSessions);
@@ -79,15 +85,26 @@ public class AppiumDriverManager {
     }
 
     // Should be used by Cucumber as well
-    public AppiumDriver startAppiumDriverInstance(String testMethodName) {
-        return startAppiumDriverInstance(testMethodName, buildDesiredCapabilities(CAPS.get()));
+    public AppiumDriver startAppiumDriverInstanceWithDeviceName(String testMethodName, String deviceName) {
+        DesiredCapabilities builtCapabilities = buildDesiredCapabilities(CAPS.get());
+        builtCapabilities.setCapability("deviceName", deviceName);
+//        builtCapabilities.setCapability("deviceUDID",deviceName);
+        builtCapabilities.setCapability("udid", deviceName);
+        System.out.println("\uD83D\uDCE3 Calling driver name : " + builtCapabilities.getCapability("deviceName") + "\uD83D\uDCE3 Method name for invocation : " + testMethodName);
+//        builtCapabilities.setCapability("avd", deviceName);
+        AppiumDriver driver =  startAppiumDriverInstance(testMethodName, builtCapabilities);
+        System.out.println("\uD83D\uDCE3 Method name for invocation : " + testMethodName);
+        System.out.println("\uD83D\uDCE3 Parametrized driver name : " + deviceName);
+        System.out.println("\uD83D\uDCE3 Called driver name : " + builtCapabilities.getCapability("deviceName"));
+        System.out.println("\uD83D\uDCE3 Invoked driver name : "+ driver.getCapabilities().getCapability("deviceName"));
+        return driver;
     }
 
-    public AppiumDriver startAppiumDriverInstance(String testMethodName,
-                                                  String capabilityFilePath) {
-        return startAppiumDriverInstance(testMethodName,
-                buildDesiredCapabilities(capabilityFilePath));
-    }
+//    public AppiumDriver startAppiumDriverInstance(String testMethodName,
+//                                                  String capabilityFilePath) {
+//        return startAppiumDriverInstance(testMethodName,
+//                buildDesiredCapabilities(capabilityFilePath));
+//    }
 
     public AppiumDriver startAppiumDriverInstance(String testMethodName,
                                      DesiredCapabilities desiredCapabilities) {
@@ -95,7 +112,7 @@ public class AppiumDriverManager {
                 testMethodName, CAPS.get()));
         LOGGER.info("startAppiumDriverInstance");
         AppiumDriver currentDriverSession =
-                initialiseDriver(desiredCapabilities);
+                initialiseDriver(desiredCapabilities, testMethodName);
         AppiumDriverManager.setDriver(currentDriverSession);
         return currentDriverSession;
     }
@@ -108,7 +125,10 @@ public class AppiumDriverManager {
         DesiredCapabilities desiredCapabilities = buildDesiredCapabilities(CAPS.get());
         desiredCapabilities.setCapability("appium:udids", deviceUDID);
         AppiumDriver currentDriverSession =
-                initialiseDriver(desiredCapabilities);
+                initialiseDriver(desiredCapabilities, testMethodName);
+        System.out.println("\uD83D\uDCE3 Method name for invocation : " + testMethodName);
+        System.out.println("\uD83D\uDCE3 Invoked driver name : "+ currentDriverSession.getCapabilities().getCapability("appium:deviceName"));
+
         AppiumDriverManager.setDriver(currentDriverSession);
     }
 
@@ -121,9 +141,10 @@ public class AppiumDriverManager {
         }
     }
 
-    public void stopAppiumDriver() {
+    public void stopAppiumDriver(String testMethodName) {
         if (AppiumDriverManager.getDriver() != null
                 && AppiumDriverManager.getDriver().getSessionId() != null) {
+            LOGGER.info("Testcase while Session stopping : " + testMethodName);
             LOGGER.info("Session Deleting ---- "
                     + AppiumDriverManager.getDriver().getSessionId() + "---"
                     + AppiumDriverManager.getDriver().getCapabilities().getCapability("udid"));

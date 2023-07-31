@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite thread-count="2" parallel="tests" name="testApp" verbose="2">
+    <listeners>
+        <listener class-name="com.appium.manager.AppiumParallelMethodTestListener"/>
+    </listeners>
+    <test thread-count="1" name="com.test.site.DemoOneTest" verbose="2">
+        <parameter name="device" value="emulator-5554"/>
+        <classes>
+            <class name="com.test.site.DemoOneTest"/>
+        </classes>
+    </test> <!-- com.test.site.DemoOneTest -->
+    <test thread-count="1" name="com.test.site.DemoTwoTest" verbose="2">
+        <parameter name="device" value="emulator-5556"/>
+        <classes>
+            <class name="com.test.site.DemoTwoTest"/>
+        </classes>
+    </test> <!-- com.test.site.DemoTwoTest -->
+</suite> <!-- testApp -->

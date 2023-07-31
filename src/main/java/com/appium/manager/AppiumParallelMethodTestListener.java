@@ -21,6 +21,9 @@ import org.testng.ITestResult;
 import org.testng.SkipException;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -32,6 +35,9 @@ public final class AppiumParallelMethodTestListener extends Helpers
     private static final Logger LOGGER = Logger.getLogger(
             AppiumParallelMethodTestListener.class.getName());
     private TestLogger testLogger;
+    private List<String> emulatorTests = new ArrayList<>();
+    private List<String> realDeviceTests = new ArrayList<>();
+
     private AppiumServerManager appiumServerManager;
     private AppiumDriverManager appiumDriverManager;
     private static ThreadLocal<ITestNGMethod> currentMethods = new ThreadLocal<>();
@@ -69,9 +75,12 @@ public final class AppiumParallelMethodTestListener extends Helpers
      * Skips execution based on platform
      */
     @Override
-    public void beforeInvocation(IInvokedMethod iInvokedMethod, ITestResult iTestResult) {
+    public void beforeInvocation(IInvokedMethod iInvokedMethod, ITestResult iTestResult, ITestContext context) {
         String testMethodName = iInvokedMethod.getTestMethod().getMethodName();
-        allocateDeviceAndStartDriver(testMethodName, iTestResult);
+        String testName = context.getCurrentXmlTest().getName();
+        String deviceName = context.getCurrentXmlTest().getParameter("device");
+
+        allocateDeviceAndStartDriver(testMethodName, iTestResult, deviceName);
         if (AppiumDeviceManager.getAppiumDevice() != null) {
             LOGGER.info("Driver Session created!");
             currentMethods.set(iInvokedMethod.getTestMethod());
@@ -93,12 +102,12 @@ public final class AppiumParallelMethodTestListener extends Helpers
         }
     }
 
-    private void allocateDeviceAndStartDriver(String testMethodName, ITestResult iTestResult) {
+    private void allocateDeviceAndStartDriver(String testMethodName, ITestResult iTestResult, String deviceName) {
         try {
             AppiumDriver driver = AppiumDriverManager.getDriver();
             if (driver == null || driver.getSessionId() == null) {
                 if (!testMethodName.equalsIgnoreCase("tearDown")) {
-                    appiumDriverManager.startAppiumDriverInstance(testMethodName);
+                    appiumDriverManager.startAppiumDriverInstanceWithDeviceName(testMethodName, deviceName);
                 }
                 if (!isCloudExecution()) {
                     startReportLogging(iTestResult);
@@ -114,12 +123,36 @@ public final class AppiumParallelMethodTestListener extends Helpers
      * De-allocates device after each test method execution
      * Terminate logs getting captured after each test method execution
      */
+
+    public String formattedTime(){
+        // Get the current timestamp in milliseconds
+        long currentTimeMillis = System.currentTimeMillis();
+
+        // Create a Date object from the timestamp
+        Date date = new Date(currentTimeMillis);
+
+        // Create a SimpleDateFormat object with the desired format
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+
+        // Format the Date object to HH:MM:SS format
+        String formattedTime = sdf.format(date);
+        return formattedTime;
+    }
     @SneakyThrows
     @Override
     public void afterInvocation(IInvokedMethod iInvokedMethod, ITestResult iTestResult) {
         {
+            String testMethodName = iInvokedMethod.getTestMethod().getMethodName();
+            String deviceName = AppiumDeviceManager.getAppiumDevice().deviceName;
+            if(deviceName.contains("emulator"))
+            {
+                emulatorTests.add(testMethodName + " : " + formattedTime() +" ");
+            }
+            else {
+                realDeviceTests.add(testMethodName + " : " + formattedTime() +" ");
+            }
             try {
-                LOGGER.info("Driver Session exissts"
+                LOGGER.info("Driver Session exists"
                         + (AppiumDeviceManager.getAppiumDevice() != null)
                         + AppiumDeviceManager.getAppiumDevice());
                 if (!isCloudExecution()
@@ -132,7 +165,7 @@ public final class AppiumParallelMethodTestListener extends Helpers
                     testResults.set(logs);
                 }
                 if (iInvokedMethod.isTestMethod()) {
-                    appiumDriverManager.stopAppiumDriver();
+                    appiumDriverManager.stopAppiumDriver(testMethodName);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -199,6 +232,9 @@ public final class AppiumParallelMethodTestListener extends Helpers
     @Override
     public void onFinish(ITestContext iTestContext) {
         SessionContext.setReportPortalLaunchURL(iTestContext);
+
+        System.out.println("Emulator methods : " + emulatorTests);
+        System.out.println("Real Device methods : " + realDeviceTests);
     }
 
     public static ITestNGMethod getTestMethod() {

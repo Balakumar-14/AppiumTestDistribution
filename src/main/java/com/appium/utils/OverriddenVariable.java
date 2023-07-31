@@ -36,6 +36,7 @@ public class OverriddenVariable {
     }
 
     private static String getValueFromEnvOrProperty(String key) {
+        System.out.println(System.getenv(""));
         return (null == System.getProperty(key)) ? System.getenv(key) : System.getProperty(key);
     }
 }
